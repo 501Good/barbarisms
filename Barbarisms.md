@@ -6,7 +6,7 @@ Kirill Milintsevich, Ivan Rodin
 Introduction
 ------------
 
-Here, we're doing cool stuff, analysing the usage of the Barbarisms in the Russian Internet.
+Here, we're doing cool stuff, analyzing the usage of the Barbarisms in the Russian Internet.
 
 Let's load some useful packages and our data:
 
@@ -31,7 +31,7 @@ barbar <- read.csv("https://goo.gl/ggeuW5")
 Manipulating the data
 ---------------------
 
-Let's divide our cities into small(population &lt; 100000) and big(population &gt; 100000). Also, we'd like to throw out very small cities, with the population smaller than 10000 inhabitants, due to the small amount of commenters from those ones and the fact that they cannot be called "cities" (A.A.Perederiy. City Classification and Typology. Link: <http://www.mstu.edu.ru/science/conferences/11ntk/materials/section8/section8_35.html>).
+Let's divide our cities into small(population &lt; 100000) and big(population &gt; 100000). Also, we'd like to throw out very small cities, with the population smaller than 10000 inhabitants, due to the small amount of commentators from those ones and the fact that they cannot be called "cities" (A.A.Perederiy. City Classification and Typology. Link: <http://www.mstu.edu.ru/science/conferences/11ntk/materials/section8/section8_35.html>).
 
 Statistics
 ----------
@@ -55,7 +55,7 @@ group_by(barbar_by_status, status) %>%
 
 Surprisingly, users from small cities tend to use almost twice as more barbarisms that users from big cities.
 
-We also want to conduct a Shapiro test to see whether our frequencies are normaly distributed:
+We also want to conduct a Shapiro test to see whether our frequencies are normally distributed:
 
 ``` r
 with(barbar_by_status, shapiro.test(barbar_frequency[status == "Small"])) 
@@ -77,7 +77,7 @@ with(barbar_by_status, shapiro.test(barbar_frequency[status == "Big"]))
     ## data:  barbar_frequency[status == "Big"]
     ## W = 0.37315, p-value < 2.2e-16
 
-We got the p-value way less that our alpha = 0.05, which means that frequencies are not normally distributed. In that case, let's use unpaired two-samples Wilcoxon test to find out whether the means are significanlty different from each other.
+We got the p-value way less that our alpha = 0.05, which means that frequencies are not normally distributed. In that case, let's use unpaired two-samples Wilcoxon test to find out whether the means are significantly different from each other.
 
 ``` r
 wilcox.test(barbar_frequency ~ status, data = barbar_by_status, exact = FALSE)
@@ -106,7 +106,7 @@ p + stat_compare_means()
 Clean our data
 --------------
 
-Previously, we took the data from every city, that got into our scope, i.e. that a city with only one registered used might be present there, and if that user left a comment with a barbarism in it, his city would get 1.0 probability of it's inhabitant leaving a fancy comment. That's, obviously, not very good. Let's try to conduct the same analysis on the filtered data, where only cities with at least 200 registered users were allowed in. Now, we also divide our cities into more categiries, which are "Small", "Big", "Large", "Biggest", and "Million".
+Previously, we took the data from every city, that got into our scope, i.e. that a city with only one registered user might be present there, and if that user left a comment with a barbarism in it, his city would get 1.0 probability of it's inhabitant leaving a fancy comment. That's, obviously, not very good. Let's try to conduct the same analysis on the filtered data, where only cities with at least 200 registered users were allowed in. Now, we also divide our cities into more categories, which are "Small", "Big", "Large", "Biggest", and "Million".
 
 ``` r
 barbar_filtered <- read.csv("https://goo.gl/TekJTH")
@@ -139,18 +139,18 @@ Now let's look at their means again.
     ## 4 Biggest    20 0.05571422 0.006576426
     ## 5 Million    13 0.05867399 0.004343862
 
-Now, we can see, that Small and Big cities are almost equal and only a little bit more that Large, Biggest and Million cities. Also, the diviation redused a lot, meaning that our data is more "compact" now.
+Now, we can see, that Small and Big cities are almost equal and only a little bit more that Large, Biggest and Million cities. Also, the deviation reduced a lot, meaning that our data is more "compact" now.
 
-Visualising our new data:
+Visualizing our new data:
 
 ![](Barbarisms_files/figure-markdown_github/filtered%20plot-1.png)
 
 No ANOVA here
 -------------
 
-To find out whether we can use the ANOVA test to check the significance of differences between our means. Thus, our data have to meet the assumptions homogenity and normality.
+To find out whether we can use the ANOVA test to check the significance of differences between our means. Thus, our data have to meet the assumptions homogeneity and normality.
 
-We use Levene's Test to check the homogenity of variances.
+We use Levene's Test to check the homogeneity of variances.
 
 ``` r
 leveneTest(barbar_frequency ~ status, data = barbar_by_status_detailed)
@@ -163,9 +163,9 @@ leveneTest(barbar_frequency ~ status, data = barbar_by_status_detailed)
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-P-value is less than 0.05, which means that we cannot assume the homogenity of variances in the different city size groups.
+P-value is less than 0.05, which means that we cannot assume the homogeneity of variances in the different city size groups.
 
-To check our data for normality, we use the Shapito-Wilk test on the ANOVA residuals.
+To check our data for normality, we use the Shapiro-Wilk test on the ANOVA residuals.
 
 ``` r
 res.aov <- aov(barbar_frequency ~ status, data = barbar_by_status_detailed)
@@ -181,7 +181,7 @@ shapiro.test(x = aov_residuals)
 
 Again, our value is way less that our alpha = 0.05, so we cannot assume the normality of the data.
 
-In this case, we cannot use the ANOVA test because our data failed tests for homogenity and normality. As an alternative, we'll use Kruskal-Wallis rank sum test.
+In this case, we cannot use the ANOVA test because our data failed tests for homogeneity and normality. As an alternative, we'll use Kruskal-Wallis rank sum test.
 
 ``` r
 kruskal.test(barbar_frequency ~ status, data = barbar_by_status_detailed)
@@ -219,4 +219,4 @@ Conclusion
 
 Thus we are left with two groups that are significantly different: Small-Big (pop. less than 250,000) and Large-Biggest (pop. between 250,000 and 1,000,000). Cities with more than million population kind of got out of our way. We suppose that the explanation to this may lie in a fact that many people from smaller cities move to the bigger ones, thus bringing their linguistic habits with them and mixing our samples.
 
-However, even that the diffenece is present, it is very small (less than 1%). We should probably look at other sociolinguistic factors like age, gender or education to get some bigger difference in the usage of Anglophone Barbarisms in Russian web-discourse.
+However, even that the difference is present, it is very small (less than 1%). We should probably look at other sociolinguistic factors like age, gender or education to get some bigger difference in the usage of Anglophone Barbarisms in Russian web-discourse.
