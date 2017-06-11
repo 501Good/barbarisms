@@ -1,7 +1,7 @@
 ---
-title: "Barbarisms in the Russian Internet"
+title: "Barbarisms in the Russian web-discourse"
 author: "Kirill Milintsevich, Ivan Rodin"
-date: "11 juin 2017"
+date: "2017"
 output: html_document
 ---
 
@@ -19,6 +19,7 @@ Let's load some useful packages and our data:
 library(tidyverse)
 library(ggpubr)
 library(dplyr)
+library(car)
 barbar <- read.csv("https://goo.gl/ggeuW5")
 ```
 
@@ -75,3 +76,91 @@ p <- ggboxplot(barbar_by_status, x = "status", y = "barbar_frequency",
 p + stat_compare_means()
 ```
 
+## Clean our data
+
+Previously, we took the data from every city, that got into our scope, i.e. that a city with only one registered used might be present there, and if that user left a comment with a barbarism in it, his city would get 1.0 probability of it's inhabitant leaving a fancy comment. That's, obviously, not very good. Let's try to conduct the same analysis on the filtered data, where only cities with at least 200 registered users were allowed in. Now, we also divide our cities into more categiries, which are "Small", "Big", "Large", "Biggest", and "Million".
+
+```{r loading new data}
+barbar_filtered <- read.csv("https://goo.gl/TekJTH")
+
+barbar_small_f <- barbar_filtered[barbar_filtered$population < 100000 & barbar_filtered$population > 10000,]
+barbar_big_f <- barbar_filtered[barbar_filtered$population < 250000 & barbar_filtered$population > 100000,]
+barbar_large_f <- barbar_filtered[barbar_filtered$population < 500000 & barbar_filtered$population > 250000,]
+barbar_biggest_f <- barbar_filtered[barbar_filtered$population < 1000000 & barbar_filtered$population > 500000,]
+barbar_million_f <- barbar_filtered[barbar_filtered$population > 1000000,]
+
+barbar_small_f$status <- rep("Small", length(barbar_small_f[,1]))
+barbar_big_f$status <- rep("Big", length(barbar_big_f[,1]))
+barbar_large_f$status <- rep("Large", length(barbar_large_f[,1]))
+barbar_biggest_f$status <- rep("Biggest", length(barbar_biggest_f[,1]))
+barbar_million_f$status <- rep("Million", length(barbar_million_f[,1]))
+
+barbar_by_status_detailed <- rbind(barbar_small_f[,c("barbar_frequency","status")], barbar_big_f[,c("barbar_frequency","status")], barbar_large_f[,c("barbar_frequency","status")], barbar_biggest_f[,c("barbar_frequency","status")], barbar_million_f[,c("barbar_frequency","status")])
+barbar_by_status_detailed$status <- ordered(barbar_by_status_detailed$status,
+                         levels = c("Small", "Big", "Large", "Biggest", "Million"))
+
+```
+
+Now let's look at their means again.
+
+```{r means, echo=FALSE}
+group_by(barbar_by_status_detailed, status) %>%
+  summarise(
+    count=n(),
+    mean = mean(barbar_frequency, na.rm=TRUE),
+    sd = sd(barbar_frequency, na.rm=TRUE)
+  )
+```
+
+Now, we can see, that Small and Big cities are almost equal and only a little bit more that Large, Biggest and Million cities. Also, the diviation redused a lot, meaning that our data is more "compact" now.
+
+Visualising our new data:
+
+```{r filtered plot, echo=FALSE}
+p <- ggboxplot(barbar_by_status_detailed, x = "status", y = "barbar_frequency", 
+               color = "status",
+               ylab = "Log Frequency", xlab = "City Status")
+p + stat_compare_means()
+```
+
+## No ANOVA here
+
+To find out whether we can use the ANOVA test to check the significance of differences between our means. Thus, our data have to meet the assumptions homogenity and normality.
+
+We use Levene's Test to check the homogenity of variances.
+
+```{r levene test}
+leveneTest(barbar_frequency ~ status, data = barbar_by_status_detailed)
+```
+
+P-value is less than 0.05, which means that we cannot assume the homogenity of variances in the different city size groups.
+
+To check our data for normality, we use the Shapito-Wilk test on the ANOVA residuals.
+
+```{r shapiro-wilk test}
+res.aov <- aov(barbar_frequency ~ status, data = barbar_by_status_detailed)
+aov_residuals <- residuals(object = res.aov)
+shapiro.test(x = aov_residuals)
+```
+
+Again, our value is way less that our alpha = 0.05, so we cannot assume the normality of the data.
+
+In this case, we cannot use the ANOVA test because our data failed tests for homogenity and normality. As an alternative, we'll use Kruskal-Wallis rank sum test.
+
+```{r kruskal test}
+kruskal.test(barbar_frequency ~ status, data = barbar_by_status_detailed)
+```
+
+Looking at the p-value, we can conclude that there is significant differences between the cities of different sizes. However, we have 5 categories, so we might want to look what categories exactly are significantly different. To do so, we use the pair-wise Wilcoxon test.
+
+```{r pair-wise wilcoxon}
+pairwise.wilcox.test(barbar_by_status_detailed$barbar_frequency, barbar_by_status_detailed$status, p.adjust.method = "BH")
+```
+
+From this, we can see that there's no significant difference between Small and Big cities and Large, Biggest and Million cities. What we are left with is that the difference is significant between Small and Large, Small and Biggest and Big and Large and Big and Biggest cities.
+
+## Conclusion
+
+Thus we are left with two groups that are significantly different: Small-Big (pop. less than 250,000) and Large-Biggest (pop. between 250,000 and 1,000,000). Cities with more than million population kind of got out of our way. We suppose that the explanation to this may lie in a fact that many people from smaller cities move to the bigger ones, thus bringing their linguistic habits with them and mixing our samples.
+
+However, even that the diffenece is present, it is very small (less than 1%). We should probably look at other sociolinguistic factors like age, gender or education to get some bigger difference in the usage of Anglophone Barbarisms in Russian web-discourse.
