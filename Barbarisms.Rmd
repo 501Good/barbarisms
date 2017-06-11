@@ -1,0 +1,77 @@
+---
+title: "Barbarisms in the Russian Internet"
+author: "Kirill Milintsevich, Ivan Rodin"
+date: "11 juin 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Here, we're doing cool stuff, analysing the usage of the Barbarisms in the Russian Internet. 
+
+Let's load some useful packages and our data:
+
+```{r loading data, message=FALSE}
+library(tidyverse)
+library(ggpubr)
+library(dplyr)
+barbar <- read.csv("https://goo.gl/ggeuW5")
+```
+
+## Manipulating the data
+
+Let's divide our cities into small(population < 100000) and big(population > 100000). Also, we'd like to throw out very small cities, with the population smaller than 10000 inhabitants, due to the small amount of commenters from those ones and the fact that they cannot be called "cities" (A.A.Perederiy. City Classification and Typology. Link: http://www.mstu.edu.ru/science/conferences/11ntk/materials/section8/section8_35.html).
+
+```{r manipulating data, echo=FALSE}
+barbar_big <- barbar[barbar$population < 4000000 & barbar$population > 100000,]
+barbar_small <- barbar[barbar$population < 100000 & barbar$population > 10000,]
+barbar_big$status <- rep("Big", length(barbar_big[,1]))
+barbar_small$status <- rep("Small", length(barbar_small[,1]))
+barbar_big$log_population <- log(barbar_big$population)
+barbar_small$log_population <- log(barbar_small$population)
+barbar_by_status <- rbind(barbar_big[,c("barbar_frequency","status")], barbar_small[,c("barbar_frequency","status")])
+```
+
+## Statistics
+
+The time has come to look at some numbers. First, we'd like to look at the means and SDs of the frequencies of the barbarisms' usage in small and big cities.
+
+```{r mean and sd}
+group_by(barbar_by_status, status) %>%
+  summarise(
+    count=n(),
+    mean = mean(barbar_frequency, na.rm=TRUE),
+    sd = sd(barbar_frequency, na.rm=TRUE)
+  )
+```
+
+Surprisingly, users from small cities tend to use almost twice as more barbarisms that users from big cities.
+
+We also want to conduct a Shapiro test to see whether our frequencies are normaly distributed:
+
+```{r shapiro test}
+with(barbar_by_status, shapiro.test(barbar_frequency[status == "Small"])) 
+with(barbar_by_status, shapiro.test(barbar_frequency[status == "Big"])) 
+```
+
+We got the p-value way less that our alpha = 0.05, which means that frequencies are not normally distributed. In that case, let's use unpaired two-samples Wilcoxon test to find out whether the means are significanlty different from each other.
+
+```{r wilcoxon test}
+wilcox.test(barbar_frequency ~ status, data = barbar_by_status, exact = FALSE)
+```
+
+The p-value of the test is < 2.2e-16, which is less than the significance level alpha = 0.05. We can conclude that small cities' median barbarism frequency is significantly different from big cities' median frequency with a p-value < 2.2e-16.
+
+Plotting the data:
+
+```{r plot wilcoxon}
+p <- ggboxplot(barbar_by_status, x = "status", y = "barbar_frequency", 
+               color = "status", palette = c("#00AFBB", "#E7B800"),
+               ylab = "Frequency", xlab = "City Status")
+p + stat_compare_means()
+```
+
