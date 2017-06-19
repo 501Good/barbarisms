@@ -6,9 +6,12 @@ Kirill Milintsevich, Ivan Rodin
 Introduction
 ------------
 
-Here, we're doing cool stuff, analyzing the usage of the Barbarisms in the Russian Internet.
+Very often we notice that Russian-speakers use English words that have their equivalent in Russian in their everyday discourse. In this research, we want to know if the size of the city that a speaker resides in influences their use of the English barbarisms. Our hypothesis is that people from bigger cities use more barbarisms than people from the smaller ones. It is based on the assumption that bigger cities are usually more urbanized hence people living there have more contact with the English language. Also, we studied the influence of the gender on the use of the English barbarisms.
 
-Let's load some useful packages and our data:
+The data
+--------
+
+We gathered and automatically analysed approx. 2.5 mln. commentaries from VK.com social network. With the help of precompiled dictionary of the barbarisms, we tagged each user with 1 if they used a barbarism in their comment and with 0 if otherwise. Our data contains only the users that have a city mentioned in their profiles.
 
 ``` r
 library(tidyverse)
@@ -235,7 +238,7 @@ Adding the rival features
 
 Previously, we found out that people from the cities with the population less than 250,000 people are slightly more prone to using barbarisms in their commentaries. It is interesting to know whether there is any other factor that influences the use of barbarisms. We decided to look at the user's gender.
 
-We have re-analysed our data and added a new feature of the user - their gender. Our hypotesis is that female users tend to use more barbarisms than male ones. We were rather categorical in determinig if a user uses barbarisms or not. In our data if a user was detected in using a barbarism at least once, they are considered to be using barbarisms. The data are available here: <https://goo.gl/938nJg> (Warning! The data are more than 30 Mbs).
+We have re-analysed our data and added a new feature of the user - their gender. Our hypothesis is that female users tend to use more barbarisms than male ones. We were rather categorical in determining if a user uses barbarisms or not. In our data if a user was detected in using a barbarism at least once, they are considered to be using barbarisms. The data are available here: <https://goo.gl/938nJg> (Warning! The data are more than 30 Mbs).
 
 Loading the data:
 
@@ -302,7 +305,7 @@ chisq.test(gender_matrix)
     ## data:  gender_matrix
     ## X-squared = 18791, df = 1, p-value < 2.2e-16
 
-As we can see, p-value is less than 0.05, so we can make the conclusion that there is a significant diffenece between the two groups.
+As we can see, p-value is less than 0.05, so we can make the conclusion that there is a significant difference between the two groups.
 
 Conclusion
 ----------
