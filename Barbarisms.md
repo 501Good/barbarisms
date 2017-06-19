@@ -250,10 +250,11 @@ Let's look at how the genders are distributed:
 
 ``` r
 gender %>%
-  ggplot(aes(sex_factor)) +
+  ggplot(aes(sex_factor, fill = sex_factor)) +
   geom_bar() +
   labs(x = "Gender", y = "Count", title = "Number of males and females in the data") +
-  theme_bw()
+  theme_bw() + 
+  theme(legend.position="none")
 ```
 
 ![](Barbarisms_files/figure-markdown_github/gender%20plot-1.png)
@@ -262,10 +263,11 @@ Now, let's see how many of them used barbarisms:
 
 ``` r
 subset(gender, hasBar == 1) %>%
-  ggplot(aes(sex_factor)) +
+  ggplot(aes(sex_factor, fill = sex_factor)) +
   geom_bar() +
   labs(x = "Gender", y = "Count", title = "Number of users who used barbarisms by their gender") +
-  theme_bw()
+  theme_bw() +
+  theme(legend.position="none")
 ```
 
 ![](Barbarisms_files/figure-markdown_github/gender%20barbar-1.png)
