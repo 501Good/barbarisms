@@ -2,7 +2,7 @@
 title: "Barbarisms in the Russian web-discourse"
 author: "Kirill Milintsevich, Ivan Rodin"
 date: "2017"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -180,7 +180,8 @@ Let's look at how the genders are distributed:
 gender %>%
   ggplot(aes(sex_factor)) +
   geom_bar() +
-  labs(x = "Gender", y = "Count", title = "Number of males and females in the data")
+  labs(x = "Gender", y = "Count", title = "Number of males and females in the data") +
+  theme_bw()
 ```
 
 Now, let's see how many of them used barbarisms:
@@ -189,7 +190,8 @@ Now, let's see how many of them used barbarisms:
 subset(gender, hasBar == 1) %>%
   ggplot(aes(sex_factor)) +
   geom_bar() +
-  labs(x = "Gender", y = "Count", title = "Number of users who used barbarisms by their gender")
+  labs(x = "Gender", y = "Count", title = "Number of users who used barbarisms by their gender") +
+  theme_bw()
 ```
 
 As we can see, more than twice as many female users used barbarisms in their comments. However, we still have to test it for significance. This time, we use the Chi-squared test. But we have to construct the matrix first:

@@ -47,7 +47,7 @@ group_by(barbar_by_status, status) %>%
   )
 ```
 
-    ## # A tibble: 2 × 4
+    ## # A tibble: 2 Г— 4
     ##   status count       mean         sd
     ##    <chr> <int>      <dbl>      <dbl>
     ## 1    Big   159 0.06946605 0.04508912
@@ -139,7 +139,7 @@ group_by(barbar_by_status_detailed, status) %>%
   )
 ```
 
-    ## # A tibble: 5 × 4
+    ## # A tibble: 5 Г— 4
     ##    status count       mean          sd
     ##     <ord> <int>      <dbl>       <dbl>
     ## 1   Small    39 0.06577130 0.012087895
@@ -233,7 +233,7 @@ From this, we can see that there's no significant difference between Small and B
 Adding the rival features
 -------------------------
 
-Previously, we found out that people from the cities with the population less that 250,000 people are slightly more prone to using barbarisms in their commentaries. It is interesting to know whether there is any other factor that influences the use of barbarisms. We decided to look at the user's gender.
+Previously, we found out that people from the cities with the population less than 250,000 people are slightly more prone to using barbarisms in their commentaries. It is interesting to know whether there is any other factor that influences the use of barbarisms. We decided to look at the user's gender.
 
 We have re-analysed our data and added a new feature of the user - their gender. Our hypotesis is that female users tend to use more barbarisms than male ones. We were rather categorical in determinig if a user uses barbarisms or not. In our data if a user was detected in using a barbarism at least once, they are considered to be using barbarisms. The data are available here: <https://goo.gl/938nJg> (Warning! The data are more than 30 Mbs).
 
@@ -252,7 +252,8 @@ Let's look at how the genders are distributed:
 gender %>%
   ggplot(aes(sex_factor)) +
   geom_bar() +
-  labs(x = "Gender", y = "Count", title = "Number of males and females in the data")
+  labs(x = "Gender", y = "Count", title = "Number of males and females in the data") +
+  theme_bw()
 ```
 
 ![](Barbarisms_files/figure-markdown_github/gender%20plot-1.png)
@@ -263,7 +264,8 @@ Now, let's see how many of them used barbarisms:
 subset(gender, hasBar == 1) %>%
   ggplot(aes(sex_factor)) +
   geom_bar() +
-  labs(x = "Gender", y = "Count", title = "Number of users who used barbarisms by their gender")
+  labs(x = "Gender", y = "Count", title = "Number of users who used barbarisms by their gender") +
+  theme_bw()
 ```
 
 ![](Barbarisms_files/figure-markdown_github/gender%20barbar-1.png)
